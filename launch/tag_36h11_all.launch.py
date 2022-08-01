@@ -8,10 +8,7 @@ cfg_36h11= {
     "family": "36h11",
     "size": 0.06,
     "max_hamming": 0,
-    "quad_decimate":1.5,
-    "quad_sigma":0.5,
-    "decode_sharpending": 5.0, 
-    "refine_edges": 1.0, 
+    "refine_edges": 1, 
     "z_up": True
 }
 
