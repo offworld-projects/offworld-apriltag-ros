@@ -122,11 +122,11 @@ void AprilTagNode::onCamera(const sensor_msgs::msg::Image::ConstSharedPtr& msg_i
         apriltag_detection_t* det;
         zarray_get(detections, i, &det);
 
-        // ignore untracked tags
-        if(!tag_frames.empty() && !tag_frames.count(det->id)) { continue; }
+        // // ignore untracked tags
+        // if(!tag_frames.empty() && !tag_frames.count(det->id)) { continue; }
 
-        // reject detections with more corrected bits than allowed
-        if(det->hamming>max_hamming) { continue; }
+        // // reject detections with more corrected bits than allowed
+        // if(det->hamming>max_hamming) { continue; }
 
         // detection
         apriltag_msgs::msg::AprilTagDetection msg_detection;
