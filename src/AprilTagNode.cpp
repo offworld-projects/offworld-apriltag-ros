@@ -55,8 +55,9 @@ AprilTagNode::AprilTagNode(rclcpp::NodeOptions options)
     pub_tf(create_publisher<tf2_msgs::msg::TFMessage>("/tf", rclcpp::QoS(100))),
     pub_detections(create_publisher<apriltag_msgs::msg::AprilTagDetectionArray>("detections", rclcpp::QoS(1)))
 {
+    td->decode_sharpening = declare_parameter<float>("decode_sharpening", 5.0);
     td->quad_decimate = declare_parameter<float>("decimate", 1.0);
-    td->quad_sigma =    declare_parameter<float>("blur", 0.0);
+    td->quad_sigma =    declare_parameter<float>("blur", 0.5);
     td->nthreads =      declare_parameter<int>("threads", 1);
     td->debug =         declare_parameter<int>("debug", false);
     td->refine_edges =  declare_parameter<int>("refine-edges", true);

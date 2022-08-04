@@ -14,9 +14,5 @@ apriltag:
             threads: 1              # number of threads
             refine-decode: 0        # increase the number of detected tags
             refine-pose: 0          # increase the accuracy of the extracted pose
-            debug: 0                # write additional debugging images to current working directory
-
-            # if needed, will modified AprilTagNode.cpp and hpp files to support these params
-            # "quad_decimate":1.5,
-            # "quad_sigma":0.5,
-            # "decode_sharpending": 5.0, 
+            debug: 1                # write additional debugging images to current working directory
+            decode_sharpening: 5.0

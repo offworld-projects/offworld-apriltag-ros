@@ -22,13 +22,16 @@ find_package(apriltag REQUIRED)
 include_directories(include)
 
 add_library(AprilTagNode SHARED src/AprilTagNode.cpp)
+add_library(apriltag_viz SHARED src/apriltag_viz.cpp)
 ament_target_dependencies(AprilTagNode rclcpp rclcpp_components sensor_msgs apriltag_msgs tf2_msgs image_transport cv_bridge)
+ament_target_dependencies(apriltag_viz rclcpp rclcpp_components sensor_msgs apriltag_msgs tf2_msgs image_transport cv_bridge)
 target_link_libraries(AprilTagNode apriltag::apriltag)
 rclcpp_components_register_nodes(AprilTagNode "AprilTagNode")
+rclcpp_components_register_nodes(apriltag_viz "AprilVizNode")
 
 ament_environment_hooks(${ament_cmake_package_templates_ENVIRONMENT_HOOK_LIBRARY_PATH})
 
-install(TARGETS AprilTagNode
+install(TARGETS AprilTagNode apriltag_viz
     EXPORT export_${PROJECT_NAME}
     ARCHIVE DESTINATION lib
     LIBRARY DESTINATION lib
