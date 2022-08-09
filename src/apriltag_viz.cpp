@@ -12,7 +12,7 @@ public:
     AprilVizNode(const rclcpp::NodeOptions options = rclcpp::NodeOptions())
     : Node("apriltag_viz", "apriltag", rclcpp::NodeOptions(options).use_intra_process_comms(true))
     {
-        get_parameter_or<std::string>("overlay_mode", overlay_mode, "axes");
+        get_parameter_or<std::string>("overlay_mode", overlay_mode, "tri");
 
         std::string image_transport;
         get_parameter_or<std::string>("image_transport", image_transport, "raw");
@@ -63,7 +63,6 @@ private:
             get_parameter_or("alpha", alpha, 0.5);
             cv::addWeighted(img, 1, overlay, alpha, 0, merged, -1);
         }
-
         pub_tags.publish(cv_bridge::CvImage(msg_img->header, msg_img->encoding, merged).toImageMsg());
     }
 
@@ -73,7 +72,7 @@ private:
 
         // overlay with transparent background
         overlay = cv::Mat(img.size(), CV_8UC3, cv::Scalar(0,0,0,0));
-
+        RCLCPP_INFO(this->get_logger(), "viz detections count: %d", (int)msg_tag->detections.size());
         for(const auto& d : msg_tag->detections) {
             if(overlay_mode=="axes") {
                 // axes
@@ -103,7 +102,7 @@ private:
             }
 
             for(uint i(0); i<4; i++) {
-                cv::circle(overlay, cv::Point(d.corners[i].x, d.corners[i].y), 5, colours[i], 2);
+                cv::circle(overlay, cv::Point(d.corners[i].x, d.corners[i].y), 3, colours[i], 2);
             }
         }
     }

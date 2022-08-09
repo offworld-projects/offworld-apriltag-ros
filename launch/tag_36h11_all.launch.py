@@ -11,7 +11,7 @@ cfg_tag36h11 = {
     "z_up": True,
     "decimate" : 1.5, 
     "blur" : 0.5, 
-    "refine-edges" : 1,
+    "refine-edges" : 2,
     "decode_sharpening":10.0,
     "debug": 1,
 }
@@ -23,18 +23,18 @@ def generate_launch_description():
         remappings=[("/apriltag/image", "/camera/image"), ("/apriltag/camera_info", "/camera/camera_info")],
         parameters=[cfg_tag36h11])
 
-    viz_composable_node = ComposableNode(
-		name='viz', 
-		package='apriltag_ros', plugin='AprilVizNode',
-		remappings=[("/apriltag/image", "/camera/image"), # input
-				],
-		)
+    # viz_composable_node = ComposableNode(
+	# 	name='viz', 
+	# 	package='apriltag_ros', plugin='AprilVizNode',
+	# 	remappings=[("/apriltag/image", "/camera/image"), # input
+	# 			],
+	# 	)
     container = ComposableNodeContainer(
         name='tag_container',
         namespace='apriltag',
         package='rclcpp_components',
         executable='component_container',
-        composable_node_descriptions=[composable_node, viz_composable_node],
+        composable_node_descriptions=[composable_node],
         output='screen'
     )
 
