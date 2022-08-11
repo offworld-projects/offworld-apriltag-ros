@@ -1,44 +1,109 @@
-cmake_minimum_required(VERSION 3.5)
-
+cmake_minimum_required(VERSION 3.5S)
 project(apriltag_ros)
 
-set(CMAKE_CXX_STANDARD 14)
+### Compile options
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 14)
+  set(CMAKE_CXX_STANDARD_REQUIRED ON)
+  set(CMAKE_CXX_EXTENSIONS OFF)
+endif()
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic -Werror)
+endif()
 
-find_package(rclcpp REQUIRED)
-find_package(rclcpp_components REQUIRED)
-find_package(sensor_msgs REQUIRED)
-find_package(apriltag_msgs REQUIRED)
-find_package(tf2_msgs REQUIRED)
-find_package(image_transport REQUIRED)
-find_package(cv_bridge REQUIRED)
+find_package(ament_cmake_auto REQUIRED)
+ament_auto_find_build_dependencies()
 
 find_package(Eigen3 REQUIRED)
-INCLUDE_DIRECTORIES(${EIGEN3_INCLUDE_DIR})
-
-find_package(Threads REQUIRED)
-
+find_package(OpenCV REQUIRED)
 find_package(apriltag REQUIRED)
 
-include_directories(include)
+# Set the build type.  Options are:
+#  Coverage       : w/ debug symbols, w/o optimization, w/ code-coverage
+#  Debug          : w/ debug symbols, w/o optimization
+#  Release        : w/o debug symbols, w/ optimization
+#  RelWithDebInfo : w/ debug symbols, w/ optimization
+#  MinSizeRel     : w/o debug symbols, w/ optimization, stripped binaries
+# We default to 'Release' if none was specified
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+  message(STATUS "Setting build type to 'Release' as none was specified.")
+  set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the build type" FORCE)
+  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Coverage" "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+endif()
 
-add_library(AprilTagNode SHARED src/AprilTagNode.cpp)
-add_library(apriltag_viz SHARED src/apriltag_viz.cpp)
-ament_target_dependencies(AprilTagNode rclcpp rclcpp_components sensor_msgs apriltag_msgs tf2_msgs image_transport cv_bridge)
-ament_target_dependencies(apriltag_viz rclcpp rclcpp_components sensor_msgs apriltag_msgs tf2_msgs image_transport cv_bridge)
-target_link_libraries(AprilTagNode apriltag::apriltag)
-rclcpp_components_register_nodes(AprilTagNode "AprilTagNode")
-rclcpp_components_register_nodes(apriltag_viz "AprilVizNode")
+add_compile_options(
+  "-O3" "-funsafe-loop-optimizations" "-fsee" "-funroll-loops" "-fno-math-errno"
+  "-funsafe-math-optimizations" "-ffinite-math-only" "-fno-signed-zeros")
 
-ament_environment_hooks(${ament_cmake_package_templates_ENVIRONMENT_HOOK_LIBRARY_PATH})
+# Note: These options have been turned off to allow for binary releases -
+# in local builds, they can be reactivated to achieve higher performance.
+# if("${CMAKE_SYSTEM_PROCESSOR}" MATCHES "x86_64" OR "x86_32")
+#   message("enabling msse2 for x86_64 or x86_32 architecture")
+#   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -msse2 ")
+# endif()
+# if("${CMAKE_SYSTEM_PROCESSOR}" MATCHES "arm")
+#   message("enabling -mfpu=neon -mfloat-abi=softfp for ARM architecture")
+#   set(CMAKE_CXX_FLAGS
+#     "${CMAKE_CXX_FLAGS} -march=armv7-a -mcpu=cortex-a9 -mfpu=neon -mtune=cortex-a9 -mvectorize-with-neon-quad -ffast-math ")
+# endif()
 
-install(TARGETS AprilTagNode apriltag_viz
-    EXPORT export_${PROJECT_NAME}
-    ARCHIVE DESTINATION lib
-    LIBRARY DESTINATION lib
+
+include_directories(include
+  ${EIGEN3_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
 )
 
-install(DIRECTORY cfg/ DESTINATION share/${PROJECT_NAME}/cfg)
+ament_auto_add_library(${PROJECT_NAME}_common SHARED
+  src/common_functions.cpp
+)
+target_link_libraries(${PROJECT_NAME}_common
+  ${OpenCV_LIBRARIES}
+  apriltag::apriltag
+)
+if(${tf2_geometry_msgs_VERSION} VERSION_GREATER_EQUAL 0.18.0)
+  target_compile_definitions(${PROJECT_NAME}_common PRIVATE
+    USE_TF2_GEOMETRY_MSGS_HPP_HEADER=1
+  )
+endif()
 
-install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
+ament_auto_add_library(${PROJECT_NAME}_continuous_detector SHARED
+  src/continuous_detector.cpp
+)
+target_link_libraries(${PROJECT_NAME}_continuous_detector
+  ${PROJECT_NAME}_common
+)
+rclcpp_components_register_node(${PROJECT_NAME}_continuous_detector
+  PLUGIN "apriltag_ros::ContinuousDetector"
+  EXECUTABLE ${PROJECT_NAME}_continuous_detector_node
+)
 
-ament_package()
+ament_auto_add_library(${PROJECT_NAME}_single_image_detector SHARED
+  src/single_image_detector.cpp
+)
+target_link_libraries(${PROJECT_NAME}_single_image_detector
+  ${PROJECT_NAME}_common
+)
+rclcpp_components_register_node(${PROJECT_NAME}_single_image_detector
+  PLUGIN "apriltag_ros::SingleImageDetector"
+  EXECUTABLE ${PROJECT_NAME}_single_image_detector_node
+)
+
+ament_auto_add_library(${PROJECT_NAME}_single_image_client SHARED
+  src/single_image_client.cpp
+)
+rclcpp_components_register_node(${PROJECT_NAME}_single_image_client
+  PLUGIN "apriltag_ros::SingleImageClient"
+  EXECUTABLE ${PROJECT_NAME}_single_image_client_node
+)
+
+if(BUILD_TESTING)
+  find_package(ament_lint_auto REQUIRED)
+  ament_lint_auto_find_test_dependencies()
+endif()
+
+ament_auto_package(
+  INSTALL_TO_SHARE
+    config
+    launch
+    scripts
+)

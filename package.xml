@@ -1,23 +1,48 @@
 <?xml version="1.0"?>
-<package format="2">
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
   <name>apriltag_ros</name>
-  <version>2.1.0</version>
-  <description>AprilTag detection node</description>
-  <maintainer email="Rauch.Christian@gmx.de">Christian Rauch</maintainer>
-  <license>MIT</license>
+  <version>3.1.2</version>
+  <description>
+    A ROS wrapper of the AprilTag 3 visual fiducial detection
+    algorithm. Provides full access to the core AprilTag 3 algorithm's
+    customizations and makes the tag detection image and detected tags' poses
+    available over ROS topics (including tf). The core AprilTag 3 algorithm is
+    extended to allow the detection of tag bundles and a bundle calibration
+    script is provided (bundle detection is more accurate than single tag
+    detection). Continuous (camera image stream) and single image detector nodes
+    are available.
+  </description>
 
-  <buildtool_depend>ament_cmake</buildtool_depend>
+  <maintainer email="danylo.malyuta@gmail.com">Danylo Malyuta</maintainer>
+  <maintainer email="w.merkt+oss@gmail.com">Wolfgang Merkt</maintainer>
 
-  <build_depend>eigen</build_depend>
+  <license>BSD</license>
 
+  <url type="website">http://www.ros.org/wiki/apriltag_ros</url>
+  <url type="bugtracker">https://github.com/AprilRobotics/apriltag_ros/issues</url>
+  <url type="repository">https://github.com/AprilRobotics/apriltag_ros</url>
+
+  <author>Danylo Malyuta</author>
+
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
+
+  <depend>apriltag</depend>
+  <depend>apriltag_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>image_transport</depend>
+  <depend>image_geometry</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
   <depend>sensor_msgs</depend>
-  <depend>tf2_msgs</depend>
-  <depend>apriltag_msgs</depend>
-  <depend>apriltag</depend>
-  <depend>image_transport</depend>
   <depend>cv_bridge</depend>
+  <depend>tf2_geometry_msgs</depend>
+  <depend>tf2_ros</depend>
+  <depend>eigen</depend>
+  <depend>libopencv-dev</depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>
